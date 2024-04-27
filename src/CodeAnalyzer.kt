@@ -2,12 +2,15 @@ import java.io.File
 
 class CodeAnalyzer {
     private var code: List<String> = listOf()
+
     private fun calculateComplexityOfFunction(function: String): Int {
-        val keyWords = listOf("if", "when", "for", "while")
+        val keyWords =
+            listOf("if", "when", "for", "while", "repeat") // words which increase the complexity of functions
         return function.split(" ", "(").count { keyWords.contains(it) }
     }
 
     private fun getListOfFunctionsFromCode(): List<Pair<String, String>> {
+        // returns list of functions with their names and bodies
         var ind = 0
         val functions: MutableList<Pair<String, String>> = mutableListOf()
         while (ind < code.size) {
@@ -43,25 +46,23 @@ class CodeAnalyzer {
 
     fun readCodeFromFile(path: String) {
         val file = File(path)
-        code = file.readText().split(" ")
+        code = file.readText().split(" ", "\n")
     }
 
-    fun analyze() {
+    fun analyze(): List<Pair<String, Int>> {
         val complexities: MutableMap<String, Int> = mutableMapOf()
         val functions = getListOfFunctionsFromCode()
         functions.forEach {
             complexities[it.first] = calculateComplexityOfFunction(it.second)
         }
         val topThreeMethods = complexities.entries.sortedByDescending { it.value }.take(3)
-        println("Top 3 methods by complexity:")
-        topThreeMethods.forEach { println("${it.key} - ${it.value}") }
+        return topThreeMethods.map { Pair(it.key, it.value) }
     }
 
-    fun codeStyleCheck() {
+    fun codeStyleCheck(): Int {
         val functions = getListOfFunctionsFromCode()
         val badFunctions = functions.count { !checkCamelCase(it.first) }
         val totalFunctions = functions.size
-        println("Code style check:")
-        println("Percentage of functions with bad names: ${badFunctions * 100 / totalFunctions}%")
+        return badFunctions * 100 / totalFunctions
     }
 }
